@@ -3,8 +3,12 @@ from tkcalendar import DateEntry
 import tkinter as tk
 from tkinter import ttk
 import pandas as pd
+import time
 import numpy as np
 import Automation_Script as au
+
+# test the time it takes with 2 columns time vs
+# freely places hours and mins setting
 
 #------------------------------------------------------------------------------------------
 
@@ -20,6 +24,7 @@ def on_name_selected(event):
 def close_window():
     window.destroy()
 
+start = time.time()
 # create a function that loads automation functions 
 def submit():
 
@@ -31,9 +36,16 @@ def submit():
     mm = selected_date[3:5]     
     yyyy = selected_date[6:10]
     time = time_entry.get()
+    time_h_value = time[0:2]
+    time_min_value = time[3:5]
+
     lesson_no = lesson_entry.get()
 
+    #au.lanterna_function(name, dd, mm, yyyy,time_h_value, time_min_value, lesson_no)
     au.meet_function(name, selected_date, time, email, lesson_no)
+
+end = time.time()
+print(end - start)
 
 # create a clear all function
 def clear():
@@ -46,11 +58,11 @@ def clear():
 #------------------------------------------------------------------------------------------
 
 # data for names, emails, dates, and times
-names = details['Name'].tolist()            # Student names
-email = details['Email'].tolist()           # Student emails
-email_dict = dict(zip(names, email))        # Linking names and emails
-time_h = np.arange(9, 20, 1)                # Time hour
-time_m = np.arange(0, 46, 15)               # Time minute
+names = details['Name'].tolist()                  # Student names
+email = details['Email'].tolist()                 # Student emails
+email_dict = dict(zip(names, email))              # Linking names and emails
+time_h = np.arange(9, 20, 1)                      # Time hour
+time_m = np.arange(0, 46, 15)                     # Time minute
 
 #------------------------------------------------------------------------------------------
 
