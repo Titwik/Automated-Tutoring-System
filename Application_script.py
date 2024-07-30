@@ -1,19 +1,18 @@
 # import relevant modules
-from tkcalendar import DateEntry
-import tkinter as tk
-from tkinter import ttk
-import pandas as pd
+import re
 import time
 import numpy as np
+import pandas as pd
+import datetime as dt
+import tkinter as tk
+from tkinter import ttk
 import Automation_Script as au
-
-# test the time it takes with 2 columns time vs
-# freely places hours and mins setting
+from tkcalendar import DateEntry
+from playwright.sync_api import Playwright, sync_playwright, Expect
 
 #------------------------------------------------------------------------------------------
-
 # import the student details
-details = pd.read_excel('/home/titwik/Tutoring Automation/Tutee Details.xlsx')
+details = pd.read_excel('/home/titwik/Projects/Tutoring Automation/Tutee Details.xlsx')
 
 # create a function that links names to emails
 def on_name_selected(event):
@@ -24,114 +23,139 @@ def on_name_selected(event):
 def close_window():
     window.destroy()
 
-start = time.time()
 # create a function that loads automation functions 
-def submit():
+def submit():   
 
+    start = time.time()
     # get the entry values
     name = name_var.get()
+    name_code = lant_dict[f'{name}']        # find the entry on the Lanterna website
     email = email_var.get()
     selected_date = date_var.get()
     dd = selected_date[0:2]
     mm = selected_date[3:5]     
     yyyy = selected_date[6:10]
-    time = time_entry.get()
-    time_h_value = time[0:2]
-    time_min_value = time[3:5]
-
+    hour_value = int(hour_variable.get())
+    minute_value = min_variable.get()
     lesson_no = lesson_entry.get()
 
-    #au.lanterna_function(name, dd, mm, yyyy,time_h_value, time_min_value, lesson_no)
-    au.meet_function(name, selected_date, time, email, lesson_no)
+    au.meet_function(name, dd,mm,yyyy, hour_value, minute_value, email, lesson_no)
+    print('Google Meet Set up!')
+    au.lanterna_function(name_code, dd, mm, yyyy,hour_value, minute_value, lesson_no)
+    print('Lesson booked on Lanterna!')
+    end = time.time()
+    elapsed = end - start
+    print(elapsed)
 
-end = time.time()
-print(end - start)
+    window.destroy()
 
 # create a clear all function
 def clear():
     name_var.set('')
     email_var.set('')
     date_var.set('')
-    time_entry.delete(0, tk.END)
+    hour_variable.set('')
+    min_variable.set('')
     lesson_entry.delete(0, tk.END)
 
 #------------------------------------------------------------------------------------------
-
 # data for names, emails, dates, and times
+
 names = details['Name'].tolist()                  # Student names
 email = details['Email'].tolist()                 # Student emails
+lant_code = details['Lanterna Code'].tolist()     # Playwright seeks these entries
 email_dict = dict(zip(names, email))              # Linking names and emails
-time_h = np.arange(9, 20, 1)                      # Time hour
-time_m = np.arange(0, 46, 15)                     # Time minute
+lant_dict = dict(zip(names, lant_code))           # Linking names and codes
+time_h = list(np.arange(9, 20, 1))                # Time hour
+time_m = ['00','15',"30",'45']                    # Time minute
 
 #------------------------------------------------------------------------------------------
-
 # Create the main window
-window = tk.Tk()
-window.title("Booking Process!  ")
-window.geometry("500x500")  
 
+window = tk.Tk()
+window.title("Booking Process!")
+#window.geometry("500x500")
+ 
 title = tk.Label(text="Booking details!", font=("Arial", 24))
 title.pack()
 
-frame = tk.Frame(window)
-frame.rowconfigure([0, 1, 2, 3, 4, 5], weight=1)
-frame.columnconfigure([0, 1], weight=1)
+main_frame = tk.Frame(window)
+main_frame.pack(fill=tk.BOTH, expand=True)
+main_frame.pack_propagate(False)
+main_frame.rowconfigure([0, 1, 2, 3, 4, 5], weight=1)
+main_frame.columnconfigure([0, 1], weight=1)
 
 #------------------------------------------------------------------------------------------
 # Name
 
-name_label = tk.Label(frame, text="Name", font=("Arial", 18))
-name_label.grid(row=0, column=0, padx=10, pady=5, sticky=tk.W)
+name_label = tk.Label(main_frame, text="Name", font=("Arial", 18))
+name_label.grid(row=0, column=0, padx=10, pady=5)
 
 name_var = tk.StringVar()   
-name_dropdown = ttk.Combobox(frame, textvariable=name_var, font=('Arial', 18))
+name_dropdown = ttk.Combobox(main_frame, textvariable=name_var, font=('Arial', 18))
 name_dropdown['values'] = names
 name_dropdown.bind("<<ComboboxSelected>>", on_name_selected)
-name_dropdown.grid(row=0, column=1, padx=10, pady=5, sticky=tk.W+tk.E)
+name_dropdown.grid(row=0, column=1, padx=10, pady=5)
 
 #------------------------------------------------------------------------------------------
 # Email
 
-email_label = tk.Label(frame, text="Email", font=("Arial", 18))
-email_label.grid(row=1, column=0, padx=10, pady=5, sticky=tk.W)
+email_label = tk.Label(main_frame, text="Email", font=("Arial", 18))
+email_label.grid(row=1, column=0, padx=10, pady=5)
 
 email_var = tk.StringVar()
-email_entry = tk.Entry(frame, textvariable=email_var, font=('Arial', 18), state='readonly')
-email_entry.grid(row=1, column=1, padx=10, pady=5, sticky=tk.W+tk.E)
+email_entry = tk.Entry(main_frame, textvariable=email_var, font=('Arial', 18), state='readonly')
+email_entry.grid(row=1, column=1, padx=10, pady=5)
 
 #------------------------------------------------------------------------------------------
 # Lesson Date
 
-date_label = tk.Label(frame, text="Lesson Date", font=("Arial", 18))
-date_label.grid(row=2, column=0, padx=10, pady=5, sticky=tk.W)
+date_label = tk.Label(main_frame, text="Lesson Date", font=("Arial", 18))
+date_label.grid(row=2, column=0, padx=10, pady=5)
 
 date_var = tk.StringVar()
-date_entry = DateEntry(frame, textvariable=date_var, font=('Arial', 18), date_pattern='dd-mm-yyyy')
-date_entry.grid(row = 2, column = 1, padx=10, pady=5, sticky=tk.W+tk.E)
+date_entry = DateEntry(main_frame, textvariable=date_var, font=('Arial', 18), date_pattern='dd-mm-yyyy')
+date_entry.grid(row = 2, column = 1, padx=10, pady=5)
 
 #------------------------------------------------------------------------------------------
 # Lesson Time
 
-time_label = tk.Label(frame, text="Lesson Time", font=("Arial", 18))
-time_label.grid(row=3, column=0, padx=10, pady=5, sticky=tk.W)
+time_label = tk.Label(main_frame, text="Lesson Time", font=("Arial", 18))
+time_label.grid(row=3, column=0, padx=10, pady=5)
 
-time_entry = tk.Entry(frame, font=('Arial', 18))
-time_entry.grid(row=3, column=1, padx=10, pady=5, sticky=tk.W+tk.E)
+# create a frame with 1 row and two columns
+time_frame = tk.Frame(main_frame)
+time_frame.rowconfigure(0, weight=1)
+time_frame.columnconfigure([0,1], weight=1)
+
+# create a combobox for the hours in column 0
+hour_variable = tk.StringVar()   
+hour_dropdown = ttk.Combobox(time_frame, textvariable=hour_variable, font=('Arial', 18))
+hour_dropdown['values'] = time_h
+hour_dropdown.grid(row=0, column=0, padx=10, pady=5)
+
+# create a combobox for the minutes in column 1
+min_variable = tk.StringVar()
+min_dropdown = ttk.Combobox(time_frame, textvariable=min_variable, font=('Arial', 18))
+min_dropdown['values'] = time_m
+min_dropdown.grid(row=0, column=1, padx=10, pady=5)
+
+# place the timeframe row in the main_frame row 3, column 1
+time_frame.grid(row=3,column=1, padx=10, pady=10)
 
 #------------------------------------------------------------------------------------------
 # Lesson Number
 
-lesson_label = tk.Label(frame, text="Lesson Number", font=("Arial", 18))
-lesson_label.grid(row=4, column=0, padx=10, pady=5, sticky=tk.W)
+lesson_label = tk.Label(main_frame, text="Lesson Number", font=("Arial", 18))
+lesson_label.grid(row=4, column=0, padx=10, pady=5)
 
-lesson_entry = tk.Entry(frame, font=('Arial', 18))
-lesson_entry.grid(row=4, column=1, padx=10, pady=5, sticky=tk.W+tk.E)
+lesson_entry = tk.Entry(main_frame, font=('Arial', 18))
+lesson_entry.grid(row=4, column=1, padx=10, pady=5)
 
 #------------------------------------------------------------------------------------------
 # Button frame
 
-buttonframe = tk.Frame(frame)
+buttonframe = tk.Frame(main_frame)
 buttonframe.rowconfigure(0, weight=1)
 buttonframe.columnconfigure([0, 1, 2], weight=1)
 
@@ -146,9 +170,10 @@ close_button = tk.Button(buttonframe, text="Close", font=('Arial', 18), command 
 close_button.grid(row=0, column=2, padx=5, pady=5)
 
 # Place buttonframe in the 5th row of the main frame
-buttonframe.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=tk.W+tk.E)
+buttonframe.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
 
-frame.pack(fill=tk.BOTH, expand=True)
+main_frame.pack(fill=tk.BOTH, expand=True)
 
 # Run the application
 window.mainloop()
+
