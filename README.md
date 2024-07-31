@@ -2,7 +2,11 @@
 
 Created a script to automate logging into and finding a relevant student's profile on a tutoring platform using websrcaping in Playwright. Additionally, made use of the Google calendar API to generate Google Meet events and invite the specified student to these meetings.
 
-## The booking GUI
+The `Automated_Script.py` file contains two functions, one pertaining to navigating and booking a lesson on the tutoring platform, while the other sets up a Google Meet event in my calendar and sends the invite out. 
+
+The `Application_script.py` file contains the `tkinter` code used to create the GUI for the data entry form used in making the booking.
+
+## The booking data entry form
 
 ![image](https://github.com/user-attachments/assets/f792b46a-df22-4d16-b87c-7a74beee32af)
 
