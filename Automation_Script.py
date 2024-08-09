@@ -60,7 +60,7 @@ def lanterna_function(name,dd,mm,yyyy,hour,min,lesson_number):
 def meet_function(name, dd,mm,yyyy, hour, minute, email, lesson_number):
 
     # set calendar ID to personal tutoring calendar
-    calendarid = "f1114c8d9dfbb4aadac9e18a69d852071d1a67793942efe83717baf451aa5a3c@group.calendar.google.com"
+    calendarid = "f1114c8d9df3717baf451aa5a3c@group.calendar.google.com"
 
     creds = None
 
