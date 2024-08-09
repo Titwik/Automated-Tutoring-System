@@ -28,11 +28,7 @@ def lanterna_function(name,dd,mm,yyyy,hour,min,lesson_number):
         # log in
         page.locator("#username").fill("amritwik@gmail.com")
         page.locator("#username").press("Tab")
-        page.get_by_label("Password").fill("dpha")      
-        page.get_by_label("Password").press("CapsLock")
-        page.get_by_label("Password").fill("dphaSA")
-        page.get_by_label("Password").press("CapsLock")
-        page.get_by_label("Password").fill("dphaSAfzxc@1854269")
+        page.get_by_label("Password").fill("PASSWORD") 
         page.get_by_label("Password").press("Enter")
 
         # Navigate to "My Students" tab
