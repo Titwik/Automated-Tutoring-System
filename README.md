@@ -8,15 +8,15 @@ The `Application_script.py` file contains the `tkinter` code used to create the 
 
 ## The booking data entry form
 
-![image](https://github.com/user-attachments/assets/f792b46a-df22-4d16-b87c-7a74beee32af)
+![image](https://github.com/user-attachments/assets/0c096843-1791-440a-a0e5-4b30687d09b5)
 
-Names are updated in an excel spreadsheet along with their corresponding emails and this is fed into the GUI where the name can be selected using a dropdown list, and the email updates automatically when the name is selected. Lesson date, time and number (Lesson 20 with the student Ritwik) is then input and submitted.
+Names are updated in an excel spreadsheet along with their corresponding emails and this is fed into the GUI where the name can be selected using a dropdown list, and the email updates automatically when the name is selected. Lesson date, time and number (Lesson 30 with the student Ritwik) is then input and submitted.
 
 This then navigates to my personal Lanterna tutoring portal where my student's details are shown:
 
 ## Booking it on tutoring platform
 
-![image](https://github.com/user-attachments/assets/588913db-770b-4ebb-b67a-18adcf6b149a)
+![image](https://github.com/user-attachments/assets/2d18292d-6afb-40ac-a7f0-2be701e3a38b)
 
 The script then books the lesson and uses the data entered in the form to create a lesson on the tutoring platform. 
 
