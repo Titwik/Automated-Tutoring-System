@@ -12,12 +12,14 @@ from playwright.sync_api import Playwright, sync_playwright, Expect
 
 #------------------------------------------------------------------------------------------
 # import the student details
-details = pd.read_excel('/home/titwik/Projects/Tutoring Automation/Tutee Details.xlsx')
+details = pd.read_excel('/home/titwik/Projects/Automated-Tutoring-System/Tutee Details.xlsx')
+details = details.sort_values(by='Name', ascending=True).reset_index(drop=True)
 
 # create a function that links names to emails
 def on_name_selected(event):
     selected_name = name_var.get()
     email_var.set(email_dict.get(selected_name, ""))
+    lesson_var.set(lesson_number_dict.get(selected_name, ''))
 
 # create a function to close the window
 def close_window():
@@ -39,13 +41,32 @@ def submit():
     minute_value = min_variable.get()
     lesson_no = lesson_entry.get()
 
-    au.meet_function(name, dd,mm,yyyy, hour_value, minute_value, email, lesson_no)
-    print('Google Meet Set up!')
-    au.lanterna_function(name_code, dd, mm, yyyy,hour_value, minute_value, lesson_no)
-    print('Lesson booked on Lanterna!')
-    end = time.time()
-    elapsed = end - start
-    print(elapsed)
+    # only do lanterna function if student is non-private
+    if (details.loc[details['Name'] == name, 'Lanterna Code'].iloc[0] == f'Private' 
+        and details['Lesson Number'] <= details['Max Lessons']):
+
+        # send the google meet invite
+        au.meet_function(name, dd,mm,yyyy, hour_value, minute_value, email, lesson_no)
+        print('Google Meet Set up!')
+        
+        #end = time.time()
+        #elapsed = end - start
+        #print(f'Time taken is {elapsed}')
+    else:
+
+        #au.meet_function(name, dd,mm,yyyy, hour_value, minute_value, email, lesson_no)
+        print('Google Meet Set up!')
+
+        au.lanterna_function(name_code, dd, mm, yyyy,hour_value, minute_value, lesson_no)
+        print('Lesson booked on Lanterna!')
+        #end = time.time()
+        #elapsed = end - start
+        #print(f'Time taken is {elapsed}')
+
+    # update the lesson number for the student 
+    details.loc[details['Name'] == name, 'Lesson Number'] += 1
+    details.to_excel('/home/titwik/Projects/Automated-Tutoring-System/Tutee Details.xlsx', index=False)
+    print('Lesson number adjusted')
 
     window.destroy()
 
@@ -63,8 +84,10 @@ def clear():
 
 names = details['Name'].tolist()                  # Student names
 email = details['Email'].tolist()                 # Student emails
+lesson_number = details['Lesson Number'].tolist()
 lant_code = details['Lanterna Code'].tolist()     # Playwright seeks these entries
 email_dict = dict(zip(names, email))              # Linking names and emails
+lesson_number_dict = dict(zip(names, lesson_number)) # linking names with the number of lessons
 lant_dict = dict(zip(names, lant_code))           # Linking names and codes
 time_h = list(np.arange(9, 20, 1))                # Time hour
 time_m = ['00','15',"30",'45']                    # Time minute
@@ -149,7 +172,13 @@ time_frame.grid(row=3,column=1, padx=10, pady=10)
 lesson_label = tk.Label(main_frame, text="Lesson Number", font=("Arial", 18))
 lesson_label.grid(row=4, column=0, padx=10, pady=5)
 
-lesson_entry = tk.Entry(main_frame, font=('Arial', 18))
+
+email_var = tk.StringVar()
+email_entry = tk.Entry(main_frame, textvariable=email_var, font=('Arial', 18), state='readonly')
+email_entry.grid(row=1, column=1, padx=10, pady=5)
+
+lesson_var = tk.StringVar()
+lesson_entry = tk.Entry(main_frame,textvariable=lesson_var, font =('Arial', 18), state='readonly')
 lesson_entry.grid(row=4, column=1, padx=10, pady=5)
 
 #------------------------------------------------------------------------------------------
@@ -176,4 +205,3 @@ main_frame.pack(fill=tk.BOTH, expand=True)
 
 # Run the application
 window.mainloop()
-

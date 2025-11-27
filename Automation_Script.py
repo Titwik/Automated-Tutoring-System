@@ -4,12 +4,20 @@ import uuid
 import time
 import os.path
 import datetime as dt
+from dotenv import load_dotenv
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from playwright.sync_api import Playwright, sync_playwright, Expect
+import os
+
+load_dotenv()
+
+username = os.getenv("username")
+password = os.getenv("password")
+calendarid = os.getenv('calendar_id') # personal tutoring calendar ID
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
@@ -17,8 +25,11 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 # Lanterna portal
 def lanterna_function(name,dd,mm,yyyy,hour,min,lesson_number):
     def run_playwright(playwright):
+        
         # launch the browser
-        browser = playwright.chromium.launch(headless=True)
+        browser = playwright.chromium.launch(headless=False, slow_mo = 300)
+        #browser = playwright.chromium.launch(headless=True)
+
         context = browser.new_context()
         page = context.new_page()
 
@@ -26,13 +37,20 @@ def lanterna_function(name,dd,mm,yyyy,hour,min,lesson_number):
         page.goto("https://portal.lanterna.com/login")
 
         # log in
-        page.locator("#username").fill("amritwik@gmail.com")
+        page.locator("#username").fill(username)
         page.locator("#username").press("Tab")
-        page.get_by_label("Password").fill("PASSWORD") 
+        page.get_by_label("Password").fill(password) 
         page.get_by_label("Password").press("Enter")
 
         # Navigate to "My Students" tab
-        page.frame_locator("[data-test-id=\"interactive-frame\"]").locator("#interactive-close-button").click()
+        try:
+            frame = page.locator('[data-test-id="interactive-frame"]').content_frame
+            frame.locator("#interactive-close-button-container").click()
+            #frame.get_by_role("button", name="Close").click()
+            page.get_by_role("button", name="Decline").click()
+        except Exception:
+            pass   # ignore failures and continue
+        
         page.get_by_role("link", name="MY STUDENTS MY STUDENTS").click()
 
         # find the student
@@ -44,11 +62,10 @@ def lanterna_function(name,dd,mm,yyyy,hour,min,lesson_number):
         page.get_by_label("Date").fill(f"{yyyy}-{mm}-{dd}")
         page.get_by_role("combobox").first.select_option(f"{hour}")  # time for hours
         page.get_by_role("combobox").nth(1).select_option(f"{min}")  # time for minutes
-        page.get_by_role("button", name="Decline").click()  # some misc decline cookies thing
-        page.get_by_label("Remarks:").click()
-        page.get_by_label("Remarks:").fill(f"Lesson {lesson_number}")
-        page.get_by_role("button", name="Book Lesson", exact=True).click()
-
+        page.get_by_role("textbox", name="Remarks:").click()
+        page.get_by_role("textbox", name="Remarks:").fill(f"Lesson {lesson_number}")
+        #page.get_by_role("button", name="Book Lesson", exact=True).click()
+        
         # ---------------------
         context.close()
         browser.close()
@@ -58,9 +75,6 @@ def lanterna_function(name,dd,mm,yyyy,hour,min,lesson_number):
 
 # define the function that schedules a Google Meet call
 def meet_function(name, dd,mm,yyyy, hour, minute, email, lesson_number):
-
-    # set calendar ID to personal tutoring calendar
-    calendarid = "f1114c8d9df3717baf451aa5a3c@group.calendar.google.com"
 
     creds = None
 
@@ -86,20 +100,15 @@ def meet_function(name, dd,mm,yyyy, hour, minute, email, lesson_number):
         # create the event
         event = {
             "summary": f"{name} Lesson {lesson_number}",
-            
-            #"location": "Online",
-            #"description": "Tutoring thing example",
-            #"colorId": '6',
-
 
             # need to change the way time is input
             "start": {
-            "dateTime": f"{yyyy}-{mm}-{dd}T{hour}:{minute}:00+01:00",
+            "dateTime": f"{yyyy}-{mm}-{dd}T{hour}:{minute}:00+00:00", # make 00+01:00 for summer time
             "timeZone": "Europe/London"
             },
 
             "end": {
-            "dateTime": f"{yyyy}-{mm}-{dd}T{hour + 1}:{minute}:00+01:00",
+            "dateTime": f"{yyyy}-{mm}-{dd}T{hour + 1}:{minute}:00+00:00", # make 00+01:00 for summer time
             "timeZone": "Europe/London"
             },
 
@@ -125,5 +134,6 @@ def meet_function(name, dd,mm,yyyy, hour, minute, email, lesson_number):
     except HttpError as error:
         print(f"An error occurred: {error}")
 
-    
-
+if __name__ == "__main__":
+    #meet_function('ritwik', '28', '08', '2025', 5, 45, 'ritwik.anand2001@gmail.com', 3)
+    print(calendarid)
