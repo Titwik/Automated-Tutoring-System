@@ -41,20 +41,19 @@ def submit():
     minute_value = min_variable.get()
     lesson_no = lesson_entry.get()
 
-    # only do lanterna function if student is non-private
-    if (details.loc[details['Name'] == name, 'Lanterna Code'].iloc[0] == f'Private' 
-        and details['Lesson Number'] <= details['Max Lessons']):
 
-        # send the google meet invite
-        au.meet_function(name, dd,mm,yyyy, hour_value, minute_value, email, lesson_no)
+    is_private = details['Lanterna Code'].iloc[0] == 'Private'
+    lesson_no = details['Lesson Number'].iloc[0]
+    max_lessons = details['Max Lessons'].iloc[0]
+
+    # only do lanterna function if student is non-private
+    if (is_private) and (lesson_no <= max_lessons):
+        au.meet_function(name, dd, mm, yyyy, hour_value, minute_value, email, lesson_no)
         print('Google Meet Set up!')
         
-        #end = time.time()
-        #elapsed = end - start
-        #print(f'Time taken is {elapsed}')
     else:
 
-        #au.meet_function(name, dd,mm,yyyy, hour_value, minute_value, email, lesson_no)
+        au.meet_function(name, dd,mm,yyyy, hour_value, minute_value, email, lesson_no)
         print('Google Meet Set up!')
 
         au.lanterna_function(name_code, dd, mm, yyyy,hour_value, minute_value, lesson_no)
