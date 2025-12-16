@@ -64,7 +64,7 @@ def lanterna_function(name,dd,mm,yyyy,hour,min,lesson_number):
         page.get_by_role("combobox").nth(1).select_option(f"{min}")  # time for minutes
         page.get_by_role("textbox", name="Remarks:").click()
         page.get_by_role("textbox", name="Remarks:").fill(f"Lesson {lesson_number}")
-        #page.get_by_role("button", name="Book Lesson", exact=True).click()
+        page.get_by_role("button", name="Book Lesson", exact=True).click()
         
         # ---------------------
         context.close()
