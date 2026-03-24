@@ -40,25 +40,11 @@ def lanterna_function(name,dd,mm,yyyy,hour,min,lesson_number):
         page.locator("#username").fill(username)
         page.locator("#username").press("Tab")
         page.get_by_label("Password").fill(password) 
-        page.get_by_label("Password").press("Enter")
-
-        # Navigate to "My Students" tab
-        try:
-            frame = page.locator('[data-test-id="interactive-frame"]').content_frame
-            frame.locator("#interactive-close-button-container").click()
-            #frame.get_by_role("button", name="Close").click()
-            page.get_by_role("button", name="Decline").click()
-        except Exception:
-            pass   # ignore failures and continue
-        
+        page.get_by_label("Password").press("Enter")      
+        page.locator("[data-test-id=\"interactive-frame\"]").content_frame.get_by_role("button", name="Close").click()
         page.get_by_role("link", name="MY STUDENTS MY STUDENTS").click()
-
-        # find the student
-        page.get_by_text(f'{name}').click()
-
-        # book the lesson
+        page.get_by_text("NoemiSteiner").click()
         page.get_by_role("button", name="BOOK LESSON").click()
-        
         page.get_by_label("Date").fill(f"{yyyy}-{mm}-{dd}")
         page.get_by_role("combobox").first.select_option(f"{hour}")  # time for hours
         page.get_by_role("combobox").nth(1).select_option(f"{min}")  # time for minutes
@@ -101,15 +87,14 @@ def meet_function(name, dd,mm,yyyy, hour, minute, email, lesson_number):
         event = {
             "summary": f"{name} Lesson {lesson_number}",
 
-            # need to change the way time is input
             "start": {
-            "dateTime": f"{yyyy}-{mm}-{dd}T{hour}:{minute}:00+00:00", # make 00+01:00 for summer time
-            "timeZone": "Europe/London"
+                "dateTime": f"{yyyy}-{mm}-{dd}T{hour}:{minute}:00",
+                "timeZone": "Europe/Vienna"
             },
 
             "end": {
-            "dateTime": f"{yyyy}-{mm}-{dd}T{hour + 1}:{minute}:00+00:00", # make 00+01:00 for summer time
-            "timeZone": "Europe/London"
+                "dateTime": f"{yyyy}-{mm}-{dd}T{hour + 1}:{minute}:00",
+                "timeZone": "Europe/Vienna"
             },
 
             "attendees": [      

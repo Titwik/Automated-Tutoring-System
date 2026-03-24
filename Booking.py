@@ -41,32 +41,16 @@ def submit():
     minute_value = min_variable.get()
     lesson_no = lesson_entry.get()
 
-    student_row = details.loc[details['Student Name'] == name]
+    student_row = details.loc[details['Name'] == name]
 
     if student_row.empty:
         raise ValueError(f"No student found with name: {name}")
 
-    lanterna_code = student_row['Lanterna Code'].iloc[0]
-    lesson_no = int(student_row['Lesson Number'].iloc[0])
-    max_lessons = int(student_row['Max Lessons'].iloc[0])
+    #au.meet_function(name, dd,mm,yyyy, hour_value, minute_value, email, lesson_no)
+    #print('Google Meet Set up!')
 
-    is_private = lanterna_code == 'Private'
-
-    if (not is_private) and (lesson_no <= max_lessons):
-        au.meet_function(
-            name, dd, mm, yyyy,
-            hour_value, minute_value,
-            email, lesson_no
-        )
-        print('Google Meet Set up!')
-        
-    else:
-
-        au.meet_function(name, dd,mm,yyyy, hour_value, minute_value, email, lesson_no)
-        print('Google Meet Set up!')
-
-        au.lanterna_function(name_code, dd, mm, yyyy,hour_value, minute_value, lesson_no)
-        print('Lesson booked on Lanterna!')
+    au.lanterna_function(name_code, dd, mm, yyyy,hour_value, minute_value, lesson_no)
+    print('Lesson booked on Lanterna!')
         #end = time.time()
         #elapsed = end - start
         #print(f'Time taken is {elapsed}')
